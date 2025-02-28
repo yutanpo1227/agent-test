@@ -1,5 +1,6 @@
 import os
 import re
+import math
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
@@ -20,6 +21,24 @@ def mul_number(val1, val2):
 
 def sub_number(val1, val2):
     return float(val1) - float(val2)
+
+def div_number(val1, val2):
+    if float(val2) == 0:
+        raise ValueError("0での除算はできません")
+    return float(val1) / float(val2)
+
+def pow_number(val1, val2):
+    return float(val1) ** float(val2)
+
+def sqrt_number(val):
+    if float(val) < 0:
+        raise ValueError("負の数の平方根は計算できません")
+    return math.sqrt(float(val))
+
+def mod_number(val1, val2):
+    if float(val2) == 0:
+        raise ValueError("0での剰余計算はできません")
+    return float(val1) % float(val2)
 
 def format_tool_result(tool_name, result_value):
     return f"<{tool_name}_result>\n<result>\n{result_value}\n</result>\n</{tool_name}_result>"
@@ -165,6 +184,49 @@ def main():
                         computed = mul_number(val1, val2)
                         print(f"\n掛け算結果: {val1} * {val2} = {computed}\n")
                         tool_result_xml = format_tool_result("mul_number", computed)
+                        messages.append(HumanMessage(content=tool_result_xml))
+                        file.write(f"""**User**\n\n{tool_result_xml}\n\n---\n\n""")
+                    case "div_number":
+                        val1 = params.get("val1")
+                        val2 = params.get("val2")
+                        try:
+                            computed = div_number(val1, val2)
+                            print(f"\n割り算結果: {val1} / {val2} = {computed}\n")
+                            tool_result_xml = format_tool_result("div_number", computed)
+                        except ValueError as e:
+                            print(f"\n割り算エラー: {str(e)}\n")
+                            tool_result_xml = format_tool_result("div_number", f"エラー: {str(e)}")
+                        messages.append(HumanMessage(content=tool_result_xml))
+                        file.write(f"""**User**\n\n{tool_result_xml}\n\n---\n\n""")
+                    case "pow_number":
+                        val1 = params.get("val1")
+                        val2 = params.get("val2")
+                        computed = pow_number(val1, val2)
+                        print(f"\nべき乗結果: {val1} ^ {val2} = {computed}\n")
+                        tool_result_xml = format_tool_result("pow_number", computed)
+                        messages.append(HumanMessage(content=tool_result_xml))
+                        file.write(f"""**User**\n\n{tool_result_xml}\n\n---\n\n""")
+                    case "sqrt_number":
+                        val = params.get("val")
+                        try:
+                            computed = sqrt_number(val)
+                            print(f"\n平方根結果: √{val} = {computed}\n")
+                            tool_result_xml = format_tool_result("sqrt_number", computed)
+                        except ValueError as e:
+                            print(f"\n平方根エラー: {str(e)}\n")
+                            tool_result_xml = format_tool_result("sqrt_number", f"エラー: {str(e)}")
+                        messages.append(HumanMessage(content=tool_result_xml))
+                        file.write(f"""**User**\n\n{tool_result_xml}\n\n---\n\n""")
+                    case "mod_number":
+                        val1 = params.get("val1")
+                        val2 = params.get("val2")
+                        try:
+                            computed = mod_number(val1, val2)
+                            print(f"\n剰余結果: {val1} % {val2} = {computed}\n")
+                            tool_result_xml = format_tool_result("mod_number", computed)
+                        except ValueError as e:
+                            print(f"\n剰余エラー: {str(e)}\n")
+                            tool_result_xml = format_tool_result("mod_number", f"エラー: {str(e)}")
                         messages.append(HumanMessage(content=tool_result_xml))
                         file.write(f"""**User**\n\n{tool_result_xml}\n\n---\n\n""")
                     case "change_prompt":
